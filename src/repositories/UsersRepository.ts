@@ -24,6 +24,15 @@ class UsersRepository{
         return result;
     }
 
+    async findById(id: string){
+        const result = await prisma.users.findUnique({
+            where: {
+                id,
+            }
+        });
+        return result;
+    }
+
     async findByCpf(cpf: string){
         const result = await prisma.users.findUnique({
             where: {
@@ -33,15 +42,27 @@ class UsersRepository{
         return result;
     }
 
-    async update(name: string, newPassword: string, phone: string, avatar_url: string){
+    async update(name: string, phone: string, avatar_url: string, user_id: string){
         const result = await prisma.users.update({
             where: {
+                id: user_id,
             },
             data: {
                 name,
-                password: newPassword,
                 phone,
                 avatar_url,
+            }
+        });
+        return result;
+    }
+
+    async updatePassword(newPassword: string, user_id: string){    
+        const result = await prisma.users.update({
+            where: {
+                id: user_id,
+            },
+            data: {
+                password: newPassword,
             }
         });
         return result;

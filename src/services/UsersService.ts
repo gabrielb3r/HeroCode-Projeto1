@@ -35,19 +35,37 @@ class UsersService{
         oldPassword, 
         newPassword, 
         phone, 
-        avatar_url
+        avatar_url,
+        user_id
     }: IUpdate){
+        let password;
         if(oldPassword && !newPassword){
-            const passwordMatch = await compare(oldPassword, findUser.password);
+            const findUserById = await this.usersRepository.findById(user_id);
+            if(!findUserById){
+                throw new Error("User not found!");
+            }
+            const passwordMatch = await compare(oldPassword, findUserById.password);
+            if(!passwordMatch){
+                throw new Error("Password does not match!");
+            }
+            password = await hash(newPassword, 10);
+            const update = await this.usersRepository.updatePassword(newPassword, user_id);
         }
-        const uploadImage = avatar_url?.buffer;
-        const uploadS3 = await s3.upload({
-            Bucket: 'semana-heroi',
-            Key: '${uuid()}-${request.file?.originalname}',
-            //ACL: 'public-read',
-            Body: avatar_url,
-            ContentType: 'image/jpeg'
-        }).promise();
+        if(avatar_url){
+            const uploadImage = avatar_url?.buffer;
+            const uploadS3 = await s3.upload({
+                Bucket: 'semana-heroi',
+                Key: '${uuid()}-${request.file?.originalname}',
+                //ACL: 'public-read',
+                Body: avatar_url,
+                ContentType: 'image/jpeg'
+            }).promise();
+
+            await this.usersRepository.update(name, phone, uploadS3.Location, user_id);
+        }
+        return{
+            message: "User updated successfully!"
+        }
     }
 
     async auth(email: string, password: string){
