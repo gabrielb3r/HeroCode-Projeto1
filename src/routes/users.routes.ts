@@ -14,17 +14,20 @@ class UsersRoutes {
         this.authMiddleware = new AuthMiddleware();
     }
 
-    getRoutes() {      
+    getRoutes() {  
+        //criar usuarios    
         this.router.post(
             '/', 
             this.usersController.store.bind(this.usersController)
         );
+        //Editar usuário
         this.router.put(
             '/', 
             upload.single('avatar_url'),
             this.authMiddleware.auth.bind(this.authMiddleware),
             this.usersController.update.bind(this.usersController)  
-        );      
+        );    
+        //Autenticação  
         this.router.post(
             '/auth', 
             this.usersController.auth.bind(this.usersController)
